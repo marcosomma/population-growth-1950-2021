@@ -60,10 +60,16 @@ function CanvasContainer(): ReactElement {
             const currentYearDataSetTop: Array<CountryObjType> = []
             Object.keys(state.jsonData ? state.jsonData : {}).forEach((country: string) => {
                 if (!country
-                    || country.indexOf("(UN)") === -1
+                    || country.indexOf("(UN)") !== -1
+                    || country.indexOf("Less") !== -1
+                    || country.indexOf("Lower") !== -1
+                    || country.indexOf("Upper") !== -1
+                    || country.indexOf("World") !== -1
+                    || country.indexOf("countries") !== -1
+                    || country.indexOf("regions") !== -1
                 ) return
                 let currentCountry = state.jsonData ? state.jsonData[String(country)] : null
-                if (!currentCountry) return;
+                if (!currentCountry || currentCountry.toString().indexOf("(UN)") !== -1) return;
                 let currentCountryData = currentCountry.find(point => point.year === currentYear)
                 // console.log(currentYear, country, currentCountryData)
                 currentYearDataSet.push({
@@ -107,7 +113,7 @@ function CanvasContainer(): ReactElement {
                         countriesCurrentData.map(
                             (value, index) => {
                                 if (!value.country) return null;
-                                const size = value.pop / 2e7
+                                const size = value.pop / 1e7
                                 return (<CountryCircle 
                                     key={index} 
                                     position={new Vector3(0, -size, 0)} 
@@ -120,7 +126,7 @@ function CanvasContainer(): ReactElement {
                         countriesCurrentDataTop.map(
                             (value, index) => {
                                 if (!value.country) return null;
-                                const height = value.pop / 2e7
+                                const height = value.pop / 1e7
                                 return (<CountryColumn 
                                     key={index} 
                                     position={new Vector3(-100, (50 + height/2), ((index-(countriesCurrentDataTop.length/2))*50))} 
