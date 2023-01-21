@@ -1,0 +1,7 @@
+// ALL ACTIONS
+export const ACTION_TEST = 'ACTION_TEST';
+export const SHOW_TOGGLE = 'SHOW_TOGGLE';
+export const SET_COLOR = 'SET_COLOR';
+export const LOAD_JSON_START = 'LOAD_JSON_START';
+export const LOAD_JSON_FAIL = 'LOAD_JSON_FAIL';
+export const LOAD_JSON_SUCCESS = 'LOAD_JSON_SUCCESS';
