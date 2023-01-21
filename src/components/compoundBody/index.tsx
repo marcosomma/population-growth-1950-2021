@@ -13,7 +13,7 @@ interface boxProps {
 }
 
 function CompoundBody(props: boxProps): ReactElement {
-  console.log("props", props);
+  // console.log("props", props);
   const [ref] = useCompoundBody<Group>((): any => ({
     mass: 1e3,
     position: props.position,

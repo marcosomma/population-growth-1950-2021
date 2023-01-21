@@ -16,12 +16,13 @@ function Instances({ temp, list}: { temp: Object3D; list: Array<JSONObject> }) {
     // Set positions
     if(ref.current && !rendered){
       for (let i = 0; i < list.length; i++) {
-        const height = Number(list[i].population) * 1e-6 < .02
-          ? .02
-          : Number(list[i].population) * 1e-6 < 10
-            ? Number(list[i].population) * 1e-6
-            : 10
-        temp.position.set(-Number(list[i].coordinates.lat), 0, -Number(list[i].coordinates.lon))
+        const height = .2
+        // const height = Number(list[i].population) * 1e-6 < .02
+        //   ? .02
+        //   : Number(list[i].population) * 1e-6 < 10
+        //     ? Number(list[i].population) * 1e-6
+        //     : 10
+        // temp.position.set(-Number(list[i].coordinates.lat), 0, -Number(list[i].coordinates.lon))
         temp.scale.set(0.02, height, 0.02)
         temp.receiveShadow = true
         temp.castShadow = true

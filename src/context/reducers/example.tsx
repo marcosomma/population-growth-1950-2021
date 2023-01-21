@@ -1,4 +1,4 @@
-import { ACTION_TEST, SHOW_TOGGLE, SET_COLOR } from "../_types";
+import { ACTION_TEST, SHOW_TOGGLE, SET_COLOR, SET_YEAR } from "../_types";
 import { State, DispatchArgs } from "../providers/initialState";
 
 const reducer = (state: State, action: DispatchArgs) => {
@@ -7,11 +7,14 @@ const reducer = (state: State, action: DispatchArgs) => {
     case ACTION_TEST:
       newState.test++;
       return newState;
-      case SHOW_TOGGLE:
-        newState.show = !state.show;
+    case SHOW_TOGGLE:
+      newState.show = !state.show;
       return newState;
-      case SET_COLOR:
-        newState.test_color = action.payload;
+    case SET_COLOR:
+      newState.test_color = action.payload;
+      return newState;
+    case SET_YEAR:
+      newState.year = action.payload;
       return newState;
     default:
       return state;

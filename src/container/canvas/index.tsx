@@ -1,63 +1,139 @@
-import { Suspense, ReactElement, useContext } from "react";
+import { Suspense, ReactElement, useContext, useEffect, useState, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Preload, MapControls } from "@react-three/drei";
-import { Object3D } from "three";
 import Loader from "../../components/loader";
-import Plane from "../../components/plane";
 import Lights from "../../components/lights";
-import Instances from "../../components/instances";
+import CountryCircle from "../../components/countryColumn/circle";
+import CountryColumn from "../../components/countryColumn/";
 import { StateContext } from "../../context/providers/State";
-import { JSONObject, JSONValue } from "../../context/providers/initialState";
-import { ObjectType } from "@react-spring/types";
+import { Vector3 } from "three";
+type CountryObjType = { country: string, pop: number }
 
-const colorMap:any = {
+
+const colorMap: any = {
 }
 
-const getColor = (country: JSONValue):any => {
-  if(!colorMap[String(country)]) colorMap[String(country)] = generateLightColorHex()
-  return colorMap[String(country)]
+const getColor = (country: string): any => {
+    if (!colorMap[String(country)]) colorMap[String(country)] = generateLightColorHex()
+    return colorMap[String(country)]
 }
 
-const processingJson = (json:Array<JSONObject>):Array<JSONObject> => {
-  const processedJson:Array<JSONObject> = json.map((datapoint:JSONObject):any => {
-    const newDatapoint:JSONObject = {
-      ...datapoint,
-      color: getColor(datapoint.country_code)
-    }
-    return newDatapoint
-  })
-  return processedJson
-}
 function generateLightColorHex() {
-  let color = "#";
-  for (let i = 0; i < 3; i++)
-    color += ("0" + Math.floor(((1 + Math.random()) * Math.pow(16, 2)) / 2).toString(16)).slice(-2);
-  return color;
+    let color = "#";
+    for (let i = 0; i < 3; i++)
+        color += ("0" + Math.floor(((1 + Math.random()) * Math.pow(16, 2)) / 2).toString(16)).slice(-2);
+    return color;
 }
 
 function CanvasContainer(): ReactElement {
-  const { state } = useContext(StateContext);
-  const reduced = state.jsonData ? processingJson(state.jsonData) : []
-  const mappedCountry:ObjectType<any> = {}
-  reduced.forEach(country => {
-    if(!mappedCountry[country.country_code.toString()]) mappedCountry[country.country_code.toString()] = []
-    mappedCountry[country.country_code.toString()].push(country)
-  })
+    const { state, actionsCollection } = useContext(StateContext);
+    const [frame, setFrame] = useState(0)
+    const [countriesCurrentData, setCountriesCurrentData] = useState(Array<{ country: string, pop: number }>)
+    const [countriesCurrentDataTop, setCountriesCurrentDataTop] = useState(Array<{ country: string, pop: number }>)
+    const [currentYear, setCurrentYear] = useState(1949)
+    const [min] = useState(1950)
+    const [max] = useState(2021)
+    const intervalref = useRef<number | null>(null);
+    const startInterval = () => {
+        if (intervalref.current !== null) return;
+        intervalref.current = window.setInterval(() => {
+            setFrame((prevFrame) => prevFrame + 1);
+        }, 25e1);
+    };
+    const stopInterval = () => {
+        if (intervalref.current) {
+            window.clearInterval(intervalref.current);
+            setFrame(0);
+            intervalref.current = null;
+        }
+    };
+    useEffect(() => {
+        if (frame >= 1) {
+            if (currentYear === max) {
+                setCurrentYear(min)
+                actionsCollection.example?.setYear(min)
+            } else {
+                setCurrentYear(currentYear + 1)
+                actionsCollection.example?.setYear(currentYear + 1)
+            }
+            const currentYearDataSet: Array<CountryObjType> = []
+            const currentYearDataSetTop: Array<CountryObjType> = []
+            Object.keys(state.jsonData ? state.jsonData : {}).forEach((country: string) => {
+                if (!country
+                    || country.indexOf("(UN)") === -1
+                ) return
+                let currentCountry = state.jsonData ? state.jsonData[String(country)] : null
+                if (!currentCountry) return;
+                let currentCountryData = currentCountry.find(point => point.year === currentYear)
+                // console.log(currentYear, country, currentCountryData)
+                currentYearDataSet.push({
+                    country,
+                    pop: currentCountryData?.total_population ? currentCountryData.total_population : 0
+                })
+                if(currentCountryData?.total_population  && currentCountryData?.total_population > 1e8) {
+                    currentYearDataSetTop.push({
+                        country,
+                        pop: currentCountryData?.total_population ? currentCountryData.total_population : 0
+                    })
+                }
+            })
+            setCountriesCurrentData(currentYearDataSet.sort((a, b) => (a.pop > b.pop) ? 1 : ((b.pop > a.pop) ? -1 : 0)))
+            setCountriesCurrentDataTop(currentYearDataSetTop.sort((a, b) => (a.pop > b.pop) ? 1 : ((b.pop > a.pop) ? -1 : 0)))
+            stopInterval();
+            if (intervalref.current) window.clearInterval(intervalref.current);
+        } else {
+            if (intervalref.current === null) {
+                startInterval();
+            }
+        }
 
-  return (
-    <Canvas shadows camera={{ position: [150, 150, 0]}}>
-      <color attach="background" args={['#111']} />
-      <MapControls maxPolarAngle={Math.PI / 2 - 0.1} maxDistance={150} />
-      <Suspense fallback={<Loader />}>
-        <Preload all />
-        <Lights />
-        <Plane />
-        {Object.entries(mappedCountry).map(country => {
-          return (<Instances key={`${country[0]}-dataset`} list={mappedCountry[country[0]]} temp={new Object3D()}/>)
-        })}
-      </Suspense>
-    </Canvas>
-  );
+        // return () => {
+        //     if (intervalref.current !== null) {
+        //       window.clearInterval(intervalref.current);
+        //     }
+        //   };
+    }, [currentYear, setFrame, frame, min, max, state.jsonData, actionsCollection])
+    // console.log(currentYear)
+
+    return (
+        <Canvas shadows camera={{ position: [500, 250, 500] }}>
+            <color attach="background" args={['#111']} />
+            <MapControls maxDistance={500} />
+            <Suspense fallback={<Loader />}>
+                <Preload all />
+                <Lights />
+                <>
+                    {
+                        countriesCurrentData.map(
+                            (value, index) => {
+                                if (!value.country) return null;
+                                const size = value.pop / 2e7
+                                return (<CountryCircle 
+                                    key={index} 
+                                    position={new Vector3(0, -size, 0)} 
+                                    color={getColor(String(value.country))} 
+                                    name={String(value.country)} 
+                                    size={size} 
+                                    pop={value.pop} />)
+                            })
+                    }{
+                        countriesCurrentDataTop.map(
+                            (value, index) => {
+                                if (!value.country) return null;
+                                const height = value.pop / 2e7
+                                return (<CountryColumn 
+                                    key={index} 
+                                    position={new Vector3(-100, (50 + height/2), ((index-(countriesCurrentDataTop.length/2))*50))} 
+                                    color={getColor(String(value.country))} 
+                                    name={String(value.country)} 
+                                    height={height}
+                                    pop={value.pop}  />)
+                            })
+                    }
+                </>
+            </Suspense>
+        </Canvas>
+    );
 }
 
 export default CanvasContainer;

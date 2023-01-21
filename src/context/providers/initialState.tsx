@@ -1,5 +1,4 @@
-import data from "../../assets/data/new.json"
-console.log(data)
+import data from "../../assets/data/origin.json"
 
 interface JSONArray extends Array<JSONValue> { }
 export interface DataPointInterface {
@@ -7,12 +6,29 @@ export interface DataPointInterface {
     name: string;
     coordinates: Coordinate;
 }
+export interface DataSet {[key: string]: Array<JSONObject>}
 export interface JSONObject {
-    coordinates: Coordinate;
-    name: JSONValue;
-    population: JSONValue;
-    country_code: JSONValue;
-    color?: JSONValue;
+        year: number;
+        total_population: number;
+        under_1: number;
+        under_5: number;
+        under_15: number;
+        under_25: number;
+        between_16_64: number;
+        '1_yo': number;
+        between_1_4: number;
+        between_5_9: number;
+        between_10_14: number;
+        between_15_19: number;
+        between_20_29: number;
+        between_30_39: number;
+        between_40_49: number;
+        between_50_59: number;
+        between_60_69: number;
+        between_70_79: number;
+        between_80_89: number;
+        between_90_99: number;
+        over_100:  number;
 }
 type Coordinate = {
     lat: number;
@@ -32,17 +48,21 @@ export type DispatchArgs = {
   
 export type State = {
     test: number;
-    test_color: string,
+    year: string;
+    test_color: string;
     show: boolean;
     loading: boolean;
-    jsonData?: Array<JSONObject>
+    jsonData?: DataSet
 }
 
 const initialState: State = {
     test: 0,
+    year: '1950',
     test_color: "#" + Math.floor(Math.random() * 16777215).toString(16),
     show: false,
     loading: false,
-    jsonData: data as Array<JSONObject>
+    jsonData: data as DataSet
 };
+console.log('data', data)
+console.log('initialState', initialState)
 export default initialState;
